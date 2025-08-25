@@ -7,9 +7,10 @@ type Props = {
   open: boolean
   onClose: () => void
   onApply: (next: World) => void
+  onDelete: (wayId: string) => void
 }
 
-export default function WayModal({ wayId, world, open, onClose, onApply }: Props) {
+export default function WayModal({ wayId, world, open, onClose, onApply, onDelete }: Props) {
   if (!open) return null
   const w = world.way_defs[wayId]
   const [textDirection, setTextDirection] = useState(w.text_direction ?? '')
@@ -23,6 +24,11 @@ export default function WayModal({ wayId, world, open, onClose, onApply }: Props
     next.way_defs[wayId].way_prompt_f = hasPromptF ? `WayPrompts.${wayId}_prompt_f` : null
     onApply(next)
     onClose()
+  }
+
+  function handleDelete() {
+    if (!window.confirm(`Way '${wayId}' löschen?`)) return
+    onDelete(wayId)
   }
 
   return (
@@ -50,9 +56,14 @@ export default function WayModal({ wayId, world, open, onClose, onApply }: Props
           <input type="checkbox" checked={hasPromptF} onChange={e=>setHasPromptF(e.target.checked)} />
           {hasPromptF && <code style={{marginLeft:8}}>WayPrompts.{wayId}_prompt_f</code>}
         </div>
-        <div className="row" style={{justifyContent:'flex-end'}}>
-          <button onClick={onClose}>Cancel</button>
-          <button className="primary" onClick={handleSave}>Save</button>
+        <div className="row" style={{justifyContent:'space-between'}}>
+          <div>
+            <button className="danger" onClick={handleDelete}>Delete</button>
+          </div>
+          <div>
+            <button onClick={onClose}>Cancel</button>
+            <button className="primary" onClick={handleSave}>Save</button>
+          </div>
         </div>
       </div>
     </div>

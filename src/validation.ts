@@ -71,6 +71,25 @@ export function validateWorld(world: World): Issue[] {
     }
   }
 
+  for (const [oid, o] of Object.entries(world.object_defs)) {
+    if (!o.examine || o.examine.trim().length === 0) {
+      issues.push({ severity: 'error', code: 'object.examine.empty', message: `Object '${oid}' has empty examine.`, path: ['object_defs', oid, 'examine'] })
+    }
+    if (o.name !== oid) {
+      issues.push({ severity: 'warning', code: 'object.name.mismatch', message: `Object '${oid}' has name '${o.name}' which differs from its key.`, path: ['object_defs', oid, 'name'] })
+    }
+    if (o.ownedby && !world.place_defs[o.ownedby]) {
+      issues.push({ severity: 'error', code: 'object.ownedby.missing', message: `Object '${oid}' ownedby '${o.ownedby}' does not exist.`, path: ['object_defs', oid, 'ownedby'] })
+    }
+    for (const field of ['apply_f', 'reveal_f', 'take_f', 'prompt_f'] as const) {
+      const val = (o as any)[field] ?? null
+      const v = validateCallback(val)
+      if (!v.valid) {
+        issues.push({ severity: 'warning', code: `object.${field}.invalid`, message: `${field} invalid: ${v.reason}`, path: ['object_defs', oid, field] })
+      }
+    }
+  }
+
   const referencedWays = new Set<string>()
   for (const p of Object.values(world.place_defs)) p.ways.forEach(wid => referencedWays.add(wid))
   for (const wid of Object.keys(world.way_defs)) {

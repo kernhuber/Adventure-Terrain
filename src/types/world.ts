@@ -60,14 +60,6 @@ export type ObjectDef= z.infer<typeof ObjectDefSchema>
 export type World    = z.infer<typeof WorldSchema>
 
 export type Severity = 'error' | 'warning' | 'info'
+export type Issue = { severity: Severity; code: string; message: string; path?: string[] }
 
-export type Issue = {
-  severity: Severity;
-  code: string;
-  message: string;
-  path?: string[];
-}
-
-export type EditorMeta = {
-  positions: Record<string, { x: number, y: number }>
-}
+export type EditorMeta = { positions: Record<string, { x: number, y: number }> }

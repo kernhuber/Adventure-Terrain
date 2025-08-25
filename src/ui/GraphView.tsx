@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import ReactFlow, { Background, Controls, MiniMap, Connection, Edge, Node,
   OnConnect, useEdgesState, useNodesState } from 'reactflow'
+import 'reactflow/dist/style.css'
 import { World } from '../types/world'
 
 type Props = {
@@ -10,35 +11,31 @@ type Props = {
   onConnectPlaces: (sourceId: string, targetId: string) => void
   onNodeDoubleClick: (placeId: string) => void
   onEdgeDoubleClick: (wayId: string) => void
-  showWayLabels: boolean                       // <-- NEU
+  showWayLabels: boolean
 }
 
 export default function GraphView({
   world, positions, onPositionsChange, onConnectPlaces,
   onNodeDoubleClick, onEdgeDoubleClick, showWayLabels
 }: Props) {
-
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
 
-  // (Re)build nodes whenever world/positions change
   useEffect(() => {
     const nextNodes: Node[] = Object.entries(world.place_defs).map(([pid, p], idx) => ({
       id: pid,
-      position: positions[pid] ?? { x: idx * 120, y: 50 + (idx % 5) * 80 },
+      position: positions[pid] ?? { x: idx * 140, y: 50 + (idx % 5) * 90 },
       data: { label: (p.callnames?.[0] ?? pid.replace(/^p_/, '')) },
       type: 'default'
     }))
     setNodes(nextNodes)
   }, [world, positions, setNodes])
 
-  // (Re)build edges whenever world **or** showWayLabels change
   useEffect(() => {
     const nextEdges: Edge[] = Object.entries(world.way_defs).map(([wid, w]) => ({
       id: wid,
       source: w.source,
       target: w.destination,
-      // label nur anzeigen, wenn toggled on
       label: showWayLabels ? (w.text_direction || wid) : undefined,
       markerEnd: { type: 'arrowclosed' },
       type: 'default'

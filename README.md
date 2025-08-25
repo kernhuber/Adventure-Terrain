@@ -1,12 +1,12 @@
-# Terrain World Editor – v0.3 (Rename‑Propagation)
+# Terrain World Editor – v0.3 (Delete & Force‑Delete)
 
 **Neu in diesem Inkrement**
-- **Callname‑Bearbeitung** im Place‑Modal.
-- **Rename‑Propagation**: Änderung des Callnames führt zu
-  - neuem Place‑ID (`p_<slug>`), inkl. Update der `_editor.positions`
-  - Neubenennung aller betroffenen Ways nach Schema `w_<src>_<dest>`
-  - Aktualisierung aller Referenzen in `place_defs[*].ways`, `way_defs[*].source/destination`
-- Toolbar‑Toggle: **Show/Hide Way Labels**
+- **Delete / Force‑Delete** für Places (über Place‑Modal)
+  - Normal Delete: nur erlaubt, wenn der Place keine eingehenden/ausgehenden Ways und keine referenzierenden Objects hat.
+  - Force‑Delete: löscht zusätzlich alle verbundenen Ways, bereinigt `place_defs[*].ways`, entfernt besitzende Objects und Positionsdaten.
+- **Delete** für Ways (über Way‑Modal), bereinigt automatisch `place_defs[source].ways`.
+- Way‑Label‑Toggle weiterhin in der Toolbar.
+- Bestehende Features bleiben: Rename‑Propagation (Callname → `p_…`, `w_…` & Referenzen), Doppelklick‑Overlays, Save mit `_editor.positions`.
 
 ## Start
 ```bash
@@ -14,7 +14,7 @@ npm i
 npm run dev
 ```
 
-## Hinweise
-- Kollisionen bei IDs werden mit Suffix `_1`, `_2`, … aufgelöst.
-- `text_direction` bleibt bei Way‑Rename unverändert (kannst du im Way‑Modal anpassen).
-- Nächste Schritte: Delete/Force‑Delete, Objekt‑Inspector, Runtime‑Export + Python‑Stub‑Bundle.
+## Als Nächstes (Vorschlag)
+- **Object‑Inspector & CRUD** (Objects anlegen, umbennen, `ownedby` setzen, etc.)
+- **Badges im Graph** (Fehler/Warnungen als Node/Edge‑Styles)
+- **Runtime‑Export** ohne `_editor` + **Python‑Stub‑Bundle** bei gesetzten Prompt‑Checkboxen.
