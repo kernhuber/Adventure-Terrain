@@ -1,0 +1,56 @@
+{
+  "place_defs": {
+    "p_start": {
+      "description": "Ein unbenannter Ort an einer staubigen, monotonen Straße durch eine heiße Wüste.",
+      "place_prompt": "Start …",
+      "place_prompt_f": null,
+      "callnames": [
+        "Start"
+      ],
+      "ways": [
+        "w_start_warenautomat"
+      ],
+      "objects": []
+    },
+    "p_warenautomat": {
+      "description": "Ein Platz mit einem klapprigen Warenautomat am Straßenrand.",
+      "place_prompt": "Beim Warenautomat …",
+      "place_prompt_f": null,
+      "callnames": [
+        "Warenautomat"
+      ],
+      "ways": [],
+      "objects": [
+        "o_warenautomat"
+      ]
+    }
+  },
+  "way_defs": {
+    "w_start_warenautomat": {
+      "source": "p_start",
+      "destination": "p_warenautomat",
+      "text_direction": "zum Warenautomat",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    }
+  },
+  "object_defs": {
+    "o_warenautomat": {
+      "name": "o_warenautomat",
+      "examine": "Ein Warenautomat mit Fahrradteilen…",
+      "help_text": "",
+      "callnames": [
+        "Warenautomat",
+        "Automat"
+      ],
+      "ownedby": "p_warenautomat",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_warenautomat_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_warenautomat_prompt_f"
+    }
+  }
+}
