@@ -1,29 +1,41 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terrain World Editor (MVP)</title>
-    <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }
-      header { padding: 12px 16px; background: #111827; color: white; }
-      main { padding: 16px; }
-      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
-      button { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; cursor: pointer; }
-      button.primary { background: #2563eb; color: white; border-color: #1d4ed8; }
-      .textarea { width: 100%; min-height: 280px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-      .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e5e7eb; font-size: 12px; }
-      .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; }
-      .issues { margin-top: 8px; }
-      .issue { padding: 6px 8px; border-left: 4px solid; margin: 4px 0; background: #f9fafb; }
-      .error { border-color: #dc2626; }
-      .warning { border-color: #d97706; }
-      .info { border-color: #2563eb; }
-      .muted { color: #6b7280; }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terrain World Editor</title>
+<style>
+:root { --bg:#0b1020; --panel:#111827; --muted:#9ca3af; --border:#1f2937; }
+html, body, #root { height:100%; }
+body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background: var(--bg); color: #e5e7eb; }
+header { padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top:0; z-index: 10;}
+main { height: calc(100% - 58px); display: grid; grid-template-columns: 1fr 360px; }
+.toolbar { display:flex; gap:8px; align-items:center; }
+button { padding: 8px 12px; border: 1px solid #374151; border-radius: 10px; background: #1f2937; color:#e5e7eb; cursor:pointer; }
+button.primary { background: #2563eb; border-color:#1d4ed8; }
+.pill { display:inline-block; padding:2px 8px; background:#374151; border-radius:999px; font-size:12px; color:#cbd5e1; }
+.right { margin-left:auto; display:flex; gap:12px; align-items:center; }
+#canvas { height:100%; }
+.side { border-left: 1px solid var(--border); padding: 8px; overflow:auto; background:#0f172a; }
+.card { border:1px solid #334155; border-radius:12px; padding:10px; margin:8px 0; background:#0b1220; }
+.issues .issue { padding:6px 8px; border-left:3px solid; margin:4px 0; background:#0f172a; }
+.error { border-color:#ef4444; }
+.warning { border-color:#f59e0b; }
+.info { border-color:#3b82f6; }
+textarea { width:100%; min-height:200px; resize:vertical; background:#0b1020; color:#e5e7eb; border:1px solid #334155; border-radius:8px; padding:8px; }
+.muted { color: var(--muted); }
+/* Modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal { width: min(720px, 92vw); background:#0b1220; border:1px solid #334155; border-radius:16px; padding:16px; }
+.row { display:flex; gap:8px; align-items:center; margin:8px 0; }
+.row label { min-width: 160px; color:#cbd5e1; }
+.row input[type="text"], .row input[type="checkbox"] { flex:1; padding:8px; border:1px solid #334155; border-radius:10px; background:#0b1020; color:#e5e7eb; }
+.row input[type="checkbox"] { flex:0; width:auto; }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/reactflow/dist/style.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

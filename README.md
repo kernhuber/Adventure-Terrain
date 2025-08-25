@@ -1,29 +1,20 @@
-# Terrain World Editor (MVP)
+# Terrain World Editor – v0.3 (Rename‑Propagation)
 
-Browser-basierter Editor für `data/world.json` (Places, Ways, Objects). **Schritt 1:** Minimale App zum Laden → Validieren → JSON-Roundtrip.
+**Neu in diesem Inkrement**
+- **Callname‑Bearbeitung** im Place‑Modal.
+- **Rename‑Propagation**: Änderung des Callnames führt zu
+  - neuem Place‑ID (`p_<slug>`), inkl. Update der `_editor.positions`
+  - Neubenennung aller betroffenen Ways nach Schema `w_<src>_<dest>`
+  - Aktualisierung aller Referenzen in `place_defs[*].ways`, `way_defs[*].source/destination`
+- Toolbar‑Toggle: **Show/Hide Way Labels**
 
-## Schnellstart
-
-Voraussetzungen: Node.js 18+
-
+## Start
 ```bash
 npm i
 npm run dev
 ```
 
-Öffne die Dev-URL aus dem Terminal (typ. `http://localhost:5173/`).
-
-## Was ist drin?
-
-- **Vite + React + TypeScript**
-- **Zod**-Schemata für `world.json`
-- **Validator** inkl. referentieller Integrität & Callback-Check gemäß Vorgaben
-- **UI (MVP)**: JSON-Datei laden, validieren, Issues anzeigen, JSON im Textfeld bearbeiten & erneut prüfen, Download
-
-## Nächste Schritte
-
-- Graph-Ansicht (React Flow)
-- Inspector-Forms & CRUD
-- Undo/Redo & Dirty-State
-- Export im exakten Format
-- Autocomplete & strikte Callback-Validierung (Registry erweiterbar unter `src/lib/callbacks.ts`)
+## Hinweise
+- Kollisionen bei IDs werden mit Suffix `_1`, `_2`, … aufgelöst.
+- `text_direction` bleibt bei Way‑Rename unverändert (kannst du im Way‑Modal anpassen).
+- Nächste Schritte: Delete/Force‑Delete, Objekt‑Inspector, Runtime‑Export + Python‑Stub‑Bundle.

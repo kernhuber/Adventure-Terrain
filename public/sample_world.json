@@ -19,7 +19,9 @@
       "callnames": [
         "Warenautomat"
       ],
-      "ways": [],
+      "ways": [
+        "w_warenautomat_start"
+      ],
       "objects": [
         "o_warenautomat"
       ]
@@ -29,7 +31,15 @@
     "w_start_warenautomat": {
       "source": "p_start",
       "destination": "p_warenautomat",
-      "text_direction": "zum Warenautomat",
+      "text_direction": "zu Warenautomat",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_warenautomat_start": {
+      "source": "p_warenautomat",
+      "destination": "p_start",
+      "text_direction": "zu Start",
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": null
@@ -51,6 +61,18 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "ObjectPrompts.o_warenautomat_prompt_f"
+    }
+  },
+  "_editor": {
+    "positions": {
+      "p_start": {
+        "x": 80,
+        "y": 120
+      },
+      "p_warenautomat": {
+        "x": 360,
+        "y": 120
+      }
     }
   }
 }

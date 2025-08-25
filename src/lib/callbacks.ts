@@ -7,7 +7,6 @@ export type CallbackModule =
   | "ObjectPrompts"
   | "WayPrompts";
 
-// Static registry (extend later or generate from backend)
 export const callbackRegistry: Record<CallbackModule, string[]> = {
   GameApplyFunctions: ["o_warenautomat_apply_f"],
   GameTakeFunctions: [],

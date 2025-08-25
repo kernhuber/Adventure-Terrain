@@ -10,7 +10,6 @@ export const CallbackModuleEnum = z.enum([
   "WayPrompts"
 ])
 
-// Primitive Callback: string "Module.Function" or null
 export const CallbackRefSchema = z.string().nullable()
 
 export const PlaceDefSchema = z.object({
@@ -53,7 +52,7 @@ export const WorldSchema = z.object({
   place_defs: PlaceDefsSchema,
   way_defs: WayDefsSchema,
   object_defs: ObjectDefsSchema
-})
+}).passthrough()
 
 export type PlaceDef = z.infer<typeof PlaceDefSchema>
 export type WayDef   = z.infer<typeof WayDefSchema>
@@ -67,4 +66,8 @@ export type Issue = {
   code: string;
   message: string;
   path?: string[];
+}
+
+export type EditorMeta = {
+  positions: Record<string, { x: number, y: number }>
 }
