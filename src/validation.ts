@@ -33,70 +33,40 @@ export function validateWorld(world: World): Issue[] {
       issues.push({ severity: 'error', code: 'place.description.empty', message: `Place '${pid}' has empty description.`, path: ['place_defs', pid, 'description'] })
     }
     const v = validateCallback(p.place_prompt_f ?? null)
-    if (!v.valid) {
-      issues.push({ severity: 'warning', code: 'place.callback.invalid', message: `place_prompt_f invalid: ${v.reason}`, path: ['place_defs', pid, 'place_prompt_f'] })
-    }
-    for (const wid of p.ways) {
-      if (!world.way_defs[wid]) {
-        issues.push({ severity: 'error', code: 'place.way.missing', message: `Place '${pid}' references missing way '${wid}'.`, path: ['place_defs', pid, 'ways'] })
-      }
-    }
-    for (const oid of p.objects) {
-      if (!world.object_defs[oid]) {
-        issues.push({ severity: 'error', code: 'place.object.missing', message: `Place '${pid}' references missing object '${oid}'.`, path: ['place_defs', pid, 'objects'] })
-      }
-    }
+    if (!v.valid) issues.push({ severity: 'warning', code: 'place.callback.invalid', message: `place_prompt_f invalid: ${v.reason}`, path: ['place_defs', pid, 'place_prompt_f'] })
+    for (const wid of p.ways) if (!world.way_defs[wid]) issues.push({ severity: 'error', code: 'place.way.missing', message: `Place '${pid}' references missing way '${wid}'.`, path: ['place_defs', pid, 'ways'] })
+    for (const oid of p.objects) if (!world.object_defs[oid]) issues.push({ severity: 'error', code: 'place.object.missing', message: `Place '${pid}' references missing object '${oid}'.`, path: ['place_defs', pid, 'objects'] })
   }
 
   for (const [wid, w] of Object.entries(world.way_defs)) {
     if (!w.text_direction || w.text_direction.trim().length === 0) {
       issues.push({ severity: 'error', code: 'way.text_direction.empty', message: `Way '${wid}' has empty text_direction.`, path: ['way_defs', wid, 'text_direction'] })
     }
-    if (w.description === undefined) {
-      issues.push({ severity: 'warning', code: 'way.description.missing', message: `Way '${wid}' has missing description.`, path: ['way_defs', wid, 'description'] })
-    }
-    if (!world.place_defs[w.source]) {
-      issues.push({ severity: 'error', code: 'way.source.missing', message: `Way '${wid}' source '${w.source}' does not exist.`, path: ['way_defs', wid, 'source'] })
-    }
-    if (!world.place_defs[w.destination]) {
-      issues.push({ severity: 'error', code: 'way.destination.missing', message: `Way '${wid}' destination '${w.destination}' does not exist.`, path: ['way_defs', wid, 'destination'] })
-    }
+    if (w.description === undefined) issues.push({ severity: 'warning', code: 'way.description.missing', message: `Way '${wid}' has missing description.`, path: ['way_defs', wid, 'description'] })
+    if (!world.place_defs[w.source]) issues.push({ severity: 'error', code: 'way.source.missing', message: `Way '${wid}' source '${w.source}' does not exist.`, path: ['way_defs', wid, 'source'] })
+    if (!world.place_defs[w.destination]) issues.push({ severity: 'error', code: 'way.destination.missing', message: `Way '${wid}' destination '${w.destination}' does not exist.`, path: ['way_defs', wid, 'destination'] })
     const v1 = validateCallback(w.obstruction_check ?? null)
-    if (!v1.valid) {
-      issues.push({ severity: 'warning', code: 'way.obstruction_check.invalid', message: `obstruction_check invalid: ${v1.reason}`, path: ['way_defs', wid, 'obstruction_check'] })
-    }
+    if (!v1.valid) issues.push({ severity: 'warning', code: 'way.obstruction_check.invalid', message: `obstruction_check invalid: ${v1.reason}`, path: ['way_defs', wid, 'obstruction_check'] })
     const v2 = validateCallback(w.way_prompt_f ?? null)
-    if (!v2.valid) {
-      issues.push({ severity: 'warning', code: 'way.way_prompt_f.invalid', message: `way_prompt_f invalid: ${v2.reason}`, path: ['way_defs', wid, 'way_prompt_f'] })
-    }
+    if (!v2.valid) issues.push({ severity: 'warning', code: 'way.way_prompt_f.invalid', message: `way_prompt_f invalid: ${v2.reason}`, path: ['way_defs', wid, 'way_prompt_f'] })
   }
 
   for (const [oid, o] of Object.entries(world.object_defs)) {
     if (!o.examine || o.examine.trim().length === 0) {
       issues.push({ severity: 'error', code: 'object.examine.empty', message: `Object '${oid}' has empty examine.`, path: ['object_defs', oid, 'examine'] })
     }
-    if (o.name !== oid) {
-      issues.push({ severity: 'warning', code: 'object.name.mismatch', message: `Object '${oid}' has name '${o.name}' which differs from its key.`, path: ['object_defs', oid, 'name'] })
-    }
-    if (o.ownedby && !world.place_defs[o.ownedby]) {
-      issues.push({ severity: 'error', code: 'object.ownedby.missing', message: `Object '${oid}' ownedby '${o.ownedby}' does not exist.`, path: ['object_defs', oid, 'ownedby'] })
-    }
+    if (o.name !== oid) issues.push({ severity: 'warning', code: 'object.name.mismatch', message: `Object '${oid}' has name '${o.name}' which differs from its key.`, path: ['object_defs', oid, 'name'] })
+    if (o.ownedby && !world.place_defs[o.ownedby]) issues.push({ severity: 'error', code: 'object.ownedby.missing', message: `Object '${oid}' ownedby '${o.ownedby}' does not exist.`, path: ['object_defs', oid, 'ownedby'] })
     for (const field of ['apply_f', 'reveal_f', 'take_f', 'prompt_f'] as const) {
       const val = (o as any)[field] ?? null
       const v = validateCallback(val)
-      if (!v.valid) {
-        issues.push({ severity: 'warning', code: `object.${field}.invalid`, message: `${field} invalid: ${v.reason}`, path: ['object_defs', oid, field] })
-      }
+      if (!v.valid) issues.push({ severity: 'warning', code: `object.${field}.invalid`, message: `${field} invalid: ${v.reason}`, path: ['object_defs', oid, field] })
     }
   }
 
   const referencedWays = new Set<string>()
   for (const p of Object.values(world.place_defs)) p.ways.forEach(wid => referencedWays.add(wid))
-  for (const wid of Object.keys(world.way_defs)) {
-    if (!referencedWays.has(wid)) {
-      issues.push({ severity: 'info', code: 'way.unreferenced', message: `Way '${wid}' is not listed in any place.ways.`, path: ['way_defs', wid] })
-    }
-  }
+  for (const wid of Object.keys(world.way_defs)) if (!referencedWays.has(wid)) issues.push({ severity: 'info', code: 'way.unreferenced', message: `Way '${wid}' is not listed in any place.ways.`, path: ['way_defs', wid] })
 
   const referencedObjects = new Set<string>()
   for (const p of Object.values(world.place_defs)) p.objects.forEach(oid => referencedObjects.add(oid))

@@ -1,71 +1,35 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { World } from '../types/world'
+import { callbackRegistry } from '../lib/callbacks'
 
-type Props = {
-  wayId: string
-  world: World
-  open: boolean
-  onClose: () => void
-  onApply: (next: World) => void
-  onDelete: (wayId: string) => void
-}
+type Props={world:World; wid:string; open:boolean; onClose:()=>void; onApply:(w:World)=>void}
 
-export default function WayModal({ wayId, world, open, onClose, onApply, onDelete }: Props) {
-  if (!open) return null
-  const w = world.way_defs[wayId]
-  const [textDirection, setTextDirection] = useState(w.text_direction ?? '')
-  const [description, setDescription] = useState(w.description ?? '')
-  const [hasPromptF, setHasPromptF] = useState(!!w.way_prompt_f)
+export default function WayModal({world,wid,open,onClose,onApply}:Props){
+  if(!open) return null
+  const w = world.way_defs[wid]
+  const [textDir,setTextDir] = useState(w.text_direction)
+  const [description,setDescription] = useState(w.description ?? '')
+  const [hasPromptF,setHasPromptF] = useState(!!w.way_prompt_f)
+  const [hasObstruction,setHasObstruction] = useState(!!w.obstruction_check)
+  const promptOptions = useMemo(()=> callbackRegistry.WayPrompts, [])
+  const obsOptions = useMemo(()=> callbackRegistry.GameObstructionCheckFunctions, [])
 
-  function handleSave() {
-    const next: World = JSON.parse(JSON.stringify(world))
-    next.way_defs[wayId].text_direction = textDirection
-    next.way_defs[wayId].description = description
-    next.way_defs[wayId].way_prompt_f = hasPromptF ? `WayPrompts.${wayId}_prompt_f` : null
-    onApply(next)
-    onClose()
+  function save(){
+    const next:World = JSON.parse(JSON.stringify(world))
+    next.way_defs[wid].text_direction = textDir
+    next.way_defs[wid].description = description
+    next.way_defs[wid].way_prompt_f = hasPromptF ? `WayPrompts.${wid}_prompt_f` : null
+    next.way_defs[wid].obstruction_check = hasObstruction ? `GameObstructionCheckFunctions.${wid}_obstruction_check` : null
+    onApply(next); onClose()
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Way '${wayId}' löschen?`)) return
-    onDelete(wayId)
-  }
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e)=>e.stopPropagation()}>
-        <h2>Way: <code>{wayId}</code></h2>
-        <div className="row">
-          <label>source</label>
-          <input type="text" value={w.source} readOnly />
-        </div>
-        <div className="row">
-          <label>destination</label>
-          <input type="text" value={w.destination} readOnly />
-        </div>
-        <div className="row">
-          <label>text_direction</label>
-          <input type="text" value={textDirection} onChange={e=>setTextDirection(e.target.value)} />
-        </div>
-        <div className="row">
-          <label>description</label>
-          <input type="text" value={description} onChange={e=>setDescription(e.target.value)} />
-        </div>
-        <div className="row">
-          <label>way_prompt_f</label>
-          <input type="checkbox" checked={hasPromptF} onChange={e=>setHasPromptF(e.target.checked)} />
-          {hasPromptF && <code style={{marginLeft:8}}>WayPrompts.{wayId}_prompt_f</code>}
-        </div>
-        <div className="row" style={{justifyContent:'space-between'}}>
-          <div>
-            <button className="danger" onClick={handleDelete}>Delete</button>
-          </div>
-          <div>
-            <button onClick={onClose}>Cancel</button>
-            <button className="primary" onClick={handleSave}>Save</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return <div className="modal-backdrop" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
+    <h2>Way: <code>{wid}</code></h2>
+    <div className="row"><label>text_direction</label><input type="text" value={textDir} onChange={e=>setTextDir(e.target.value)} /></div>
+    <div className="row"><label>description</label><input type="text" value={description} onChange={e=>setDescription(e.target.value)} /></div>
+    <div className="row"><label>way_prompt_f</label><input type="checkbox" checked={hasPromptF} onChange={e=>setHasPromptF(e.target.checked)} />{hasPromptF&&<code style={{marginLeft:8}}>WayPrompts.{wid}_prompt_f</code>}</div>
+    <div className="row"><label>obstruction_check</label><input type="checkbox" checked={hasObstruction} onChange={e=>setHasObstruction(e.target.checked)} />{hasObstruction&&<code style={{marginLeft:8}}>GameObstructionCheckFunctions.{wid}_obstruction_check</code>}</div>
+    <div className="muted" style={{marginTop:8}}>Autocomplete Registry — WayPrompts: [{promptOptions.join(', ')}]; Obstruction: [{obsOptions.join(', ')}]</div>
+    <div className="row" style={{justifyContent:'flex-end'}}><button onClick={onClose}>Cancel</button><button className="primary" onClick={save}>Save</button></div>
+  </div></div>
 }

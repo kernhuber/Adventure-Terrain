@@ -1,12 +1,10 @@
-# Terrain World Editor – v0.3 (Delete & Force‑Delete)
+# Terrain World Editor – v3.6
 
-**Neu in diesem Inkrement**
-- **Delete / Force‑Delete** für Places (über Place‑Modal)
-  - Normal Delete: nur erlaubt, wenn der Place keine eingehenden/ausgehenden Ways und keine referenzierenden Objects hat.
-  - Force‑Delete: löscht zusätzlich alle verbundenen Ways, bereinigt `place_defs[*].ways`, entfernt besitzende Objects und Positionsdaten.
-- **Delete** für Ways (über Way‑Modal), bereinigt automatisch `place_defs[source].ways`.
-- Way‑Label‑Toggle weiterhin in der Toolbar.
-- Bestehende Features bleiben: Rename‑Propagation (Callname → `p_…`, `w_…` & Referenzen), Doppelklick‑Overlays, Save mit `_editor.positions`.
+**Neu in v3.6**
+- Vollständiges **Objects-Panel** (rechts) inkl. **Add/Edit**.
+- **Object-Modal** (Create/Edit/Delete, Callbacks per Checkbox).
+- **Drag & Drop** aus dem Objects-Panel in den **Place-Editor** (Chip-Zeile). Entfernen per × räumt beide Seiten auf.
+- Way-Label-Toggle funktionsfähig, Graph bleibt wie gehabt (Zoom/Pan, Connect A→B = 2 Ways).
 
 ## Start
 ```bash
@@ -14,7 +12,7 @@ npm i
 npm run dev
 ```
 
-## Als Nächstes (Vorschlag)
-- **Object‑Inspector & CRUD** (Objects anlegen, umbennen, `ownedby` setzen, etc.)
-- **Badges im Graph** (Fehler/Warnungen als Node/Edge‑Styles)
-- **Runtime‑Export** ohne `_editor` + **Python‑Stub‑Bundle** bei gesetzten Prompt‑Checkboxen.
+## Hinweise
+- Save exportiert `world_with_editor_meta.json` inkl. `_editor.positions`.
+- Callbacks werden als `"Module.Function"`-Strings gesetzt, Validierung warnt bei unbekannten Einträgen.
+- Rename-Propagation für Places/Ways ist enthalten (Callnames aktuell read-only im Place-Modal).
