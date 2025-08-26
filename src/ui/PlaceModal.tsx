@@ -8,6 +8,8 @@ type Props = {
   open: boolean
   onClose: () => void
   onApply: (next: World) => void
+  /** optional: notify app layer to remap positions when pid changes */
+  onRenamed?: (oldPid: string, newPid: string) => void
 }
 
 function computeWayId(w: World, sourcePid: string, targetPid: string): string {
@@ -16,7 +18,8 @@ function computeWayId(w: World, sourcePid: string, targetPid: string): string {
   return `w_${slugify(sc)}_${slugify(tc)}`
 }
 
-export default function PlaceModal({ placeId, world, open, onClose, onApply }: Props) {
+export default function PlaceModal({ placeId, world, open, onClose, onApply, onRenamed }: Props) {
+//export default function PlaceModal({ placeId, world, open, onClose, onApply }: Props) {
   if (!open) return null
   const p = world.place_defs[placeId]
   const [description, setDescription] = useState(p.description)
@@ -54,6 +57,12 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply }: P
     delete next.place_defs[placeId]
     next.place_defs[newPid] = { ...original, callnames: list }
 
+    // 0) Optional: editor positions remap, if present
+    const pos = (next as any)._editor?.positions
+    if (pos && pos[placeId]) {
+      pos[newPid] = pos[placeId]
+      delete pos[placeId]
+    }
     // 2) Gemeinsame Felder + place_prompt_f an neue ID koppeln
     persistCommon(next, newPid)
 
@@ -93,7 +102,7 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply }: P
     for (const [, pl] of Object.entries(next.place_defs)) {
       pl.ways = pl.ways.map(wid => widMap[wid] ?? wid)
     }
-
+    onRenamed?.(placeId, newPid)
     onApply(next)
   }
 

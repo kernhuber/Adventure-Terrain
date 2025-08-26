@@ -243,8 +243,24 @@ export default function App() {
         </div>
       </main>
       {placeModal && world && (
-        <PlaceModal placeId={placeModal} world={world} open={true} onClose={()=>setPlaceModal(null)} onApply={applyWorld} />
-      )}
+          <PlaceModal
+            placeId={placeModal}
+            world={world}
+            open={true}
+            onClose={()=>setPlaceModal(null)}
+            onApply={applyWorld}
+            onRenamed={(oldPid, newPid) => {
+              // 1) Positionen mappen
+              setPositions(pos => {
+                const { [oldPid]: oldPos, ...rest } = pos
+                return oldPos ? { ...rest, [newPid]: oldPos } : pos
+              })
+              // 2) Offen gehaltenes Modal auf die neue ID umhängen
+              setPlaceModal(curr => (curr === oldPid ? newPid : curr))
+            }}
+          />
+        )}
+
       {wayModal && world && (
         <WayModal world={world} wid={wayModal} open={true} onClose={()=>setWayModal(null)} onApply={applyWorld} />
       )}
