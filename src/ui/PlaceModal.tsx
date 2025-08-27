@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { World } from '../types/world'
 import { slugify } from '../utils/slugify'
 
@@ -127,7 +127,7 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
 
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    const oid = e.dataTransfer.getData('text/plain')
+    const oid = e.dataTransfer.getData('text/oid')
     if (!oid || !world.object_defs[oid]) return
     const next: World = JSON.parse(JSON.stringify(world))
     const prevOwner = next.object_defs[oid].ownedby
@@ -140,8 +140,12 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e)=>e.stopPropagation()}>
+    <div className="modal-backdrop">
+        <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
         <h2>Place: <code>{placeId}</code></h2>
 
         <div className="row">
@@ -171,9 +175,17 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
           {hasPromptF && <code style={{marginLeft:8}}>PlacePrompts.{placeId}_place_prompt_f</code>}
         </div>
 
-        <div className="row" style={{alignItems:'flex-start'}}>
+        <div
+          className="row place-objects-dropzone"
+          style={{alignItems:'flex-start'}}
+          onDragOver={(e) => {
+            e.preventDefault()
+            e.dataTransfer.dropEffect = "copy"
+          }}
+          onDrop={onDrop}
+        >
           <label>Objects</label>
-          <div className="chipbar" onDragOver={(e)=>e.preventDefault()} onDrop={onDrop}>
+          <div className="chipbar">
             {assigned.map(oid => (
               <span className="chip" key={oid}>
                 {(world.object_defs[oid]?.callnames?.[0]) ?? oid.replace(/^o_/, '')}
@@ -182,6 +194,9 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
             ))}
             {assigned.length === 0 && <span className="muted">— nichts zugewiesen —</span>}
           </div>
+          <p className="drop-hint" style={{marginLeft:8, opacity:0.7}}>
+            Ziehe Objekte aus der rechten Liste hierher
+          </p>
         </div>
 
         <div className="row" style={{justifyContent:'flex-end'}}>

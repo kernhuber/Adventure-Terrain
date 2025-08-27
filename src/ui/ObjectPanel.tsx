@@ -9,7 +9,7 @@ type Props = {
 
 export default function ObjectPanel({ world, onAdd, onEdit }: Props) {
   return (
-    <div className="card">
+    <div className="card objects-panel">
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
         <h3 style={{margin:0}}>Objects</h3>
         <button onClick={onAdd}>Add Object</button>
