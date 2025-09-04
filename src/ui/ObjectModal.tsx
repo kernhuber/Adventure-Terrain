@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { World } from '../types/world'
 import { slugify } from '../utils/slugify'
 
@@ -44,26 +44,47 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
   const [hasTake, setHasTake] = useState(!!initial.take_f)
   const [hasPrompt, setHasPrompt] = useState(!!initial.prompt_f)
 
+  // internal id: auto aus callname, aber editierbar
+  const autoIdFromCallname = () => 'o_' + slugify(callname || 'neues_objekt')
+  const [oidText, setOidText] = useState<string>(editing ? (oid as string) : autoIdFromCallname())
+  const [idTouched, setIdTouched] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!editing && !idTouched) {
+      setOidText(autoIdFromCallname())
+    }
+  }, [callname]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const placeOptions = useMemo(()=> Object.keys(world.place_defs), [world])
 
   function handleDelete() {
     if (!editing) return
     if (!confirm(`Objekt ${oid} wirklich löschen?`)) return
     const next: World = JSON.parse(JSON.stringify(world))
-    // remove from any place list
+    // 1) aus allen Place-Listen entfernen
     for (const p of Object.values(next.place_defs)) {
       p.objects = p.objects.filter(x => x !== oid)
     }
+    // 2) Objekt löschen
     delete next.object_defs[oid!]
     onApply(next); onClose()
   }
 
+  function normalizeOid(raw: string): string {
+    const base = raw?.trim() ? raw.replace(/^o_/, '') : slugify(callname || 'neues_objekt')
+    return 'o_' + slugify(base)
+  }
+
   function handleSave() {
     const next: World = JSON.parse(JSON.stringify(world))
-    const slug = slugify(callname)
-    const newOidBase = 'o_' + slug
-    const newOid = editing ? (oid as string) : ensureUniqueId(newOidBase, (x)=> !!next.object_defs[x])
 
+    const newOidDesired = normalizeOid(oidText)
+    const newOid = editing
+      ? (newOidDesired === oid ? newOidDesired
+         : (next.object_defs[newOidDesired] ? ensureUniqueId(newOidDesired, (x)=> !!next.object_defs[x]) : newOidDesired))
+      : ensureUniqueId(newOidDesired, (x)=> !!next.object_defs[x])
+
+    // Objekt-Datensatz vorbereiten
     const obj = {
       name: newOid,
       examine,
@@ -79,12 +100,30 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
     }
 
     if (editing) {
-      // update references in places if oid changed (we don't rename in this modal to keep scope tight)
-      next.object_defs[newOid] = obj
-      if (ownedby) {
-        // ensure in place list
-        const list = next.place_defs[ownedby].objects
-        if (!list.includes(newOid)) list.push(newOid)
+      const old = oid as string
+
+      // Wenn die ID sich ändert: Schlüssel in object_defs umhängen
+      if (newOid !== old) {
+        // 1) neuen Key setzen
+        next.object_defs[newOid] = obj
+        // 2) alten löschen
+        delete next.object_defs[old]
+        // 3) in allen place_defs[*].objects austauschen
+        for (const p of Object.values(next.place_defs)) {
+          p.objects = p.objects.map(x => x === old ? newOid : x)
+        }
+      } else {
+        next.object_defs[newOid] = obj
+      }
+
+      // Ownership-Listen anpassen (falls ownedby gesetzt/entfernt wurde)
+      for (const [pid, p] of Object.entries(next.place_defs)) {
+        if (pid === (ownedby || '')) {
+          if (!p.objects.includes(newOid)) p.objects.push(newOid)
+        } else {
+          // Sicherstellen, dass das Objekt nicht an anderen Orten doppelt bleibt
+          p.objects = p.objects.filter(x => x !== newOid)
+        }
       }
     } else {
       next.object_defs[newOid] = obj
@@ -93,17 +132,31 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
         if (!list.includes(newOid)) list.push(newOid)
       }
     }
+
     onApply(next); onClose()
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e)=>e.stopPropagation()}>
+    <div className="modal-backdrop">
+      <div className="modal" onClick={(e)=>e.stopPropagation()} onMouseDown={(e)=>e.stopPropagation()}>
         <h2>{editing ? 'Edit Object' : 'Add Object'} {editing && <code>{oid}</code>}</h2>
+
         <div className="row">
           <label>callname</label>
           <input type="text" value={callname} onChange={e=>setCallname(e.target.value)} />
         </div>
+
+        <div className="row">
+          <label>internal id</label>
+          <input
+            type="text"
+            value={oidText}
+            onChange={(e)=>{ setOidText(e.target.value); setIdTouched(true) }}
+            placeholder="z.B. o_trank"
+          />
+          <span className="muted" style={{marginLeft:8}}>auto aus Callname: <code>{autoIdFromCallname()}</code></span>
+        </div>
+
         <div className="row">
           <label>examine</label>
           <input type="text" value={examine} onChange={e=>setExamine(e.target.value)} />
@@ -127,13 +180,30 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
           <label>hidden</label>
           <input type="checkbox" checked={hidden} onChange={e=>setHidden(e.target.checked)} />
         </div>
-        <div className="row"><label>apply_f</label><input type="checkbox" checked={hasApply} onChange={e=>setHasApply(e.target.checked)} />{hasApply && <code style={{marginLeft:8}}>GameApplyFunctions.o_…_apply_f</code>}</div>
-        <div className="row"><label>reveal_f</label><input type="checkbox" checked={hasReveal} onChange={e=>setHasReveal(e.target.checked)} />{hasReveal && <code style={{marginLeft:8}}>GameRevealFunctions.o_…_reveal_f</code>}</div>
-        <div className="row"><label>take_f</label><input type="checkbox" checked={hasTake} onChange={e=>setHasTake(e.target.checked)} />{hasTake && <code style={{marginLeft:8}}>GameTakeFunctions.o_…_take_f</code>}</div>
-        <div className="row"><label>prompt_f</label><input type="checkbox" checked={hasPrompt} onChange={e=>setHasPrompt(e.target.checked)} />{hasPrompt && <code style={{marginLeft:8}}>ObjectPrompts.o_…_prompt_f</code>}</div>
 
-        <div className="row" style={{justifyContent:'space-between'}}>
-          {editing ? <button onClick={handleDelete} style={{borderColor:'#ef4444', background:'#7f1d1d'}}>Delete</button> : <span />}
+        <div className="row">
+          <label>apply_f</label>
+          <input type="checkbox" checked={hasApply} onChange={e=>setHasApply(e.target.checked)} />
+          {hasApply && <code style={{marginLeft:8}}>GameApplyFunctions.{normalizeOid(oidText)}_apply_f</code>}
+        </div>
+        <div className="row">
+          <label>reveal_f</label>
+          <input type="checkbox" checked={hasReveal} onChange={e=>setHasReveal(e.target.checked)} />
+          {hasReveal && <code style={{marginLeft:8}}>GameRevealFunctions.{normalizeOid(oidText)}_reveal_f</code>}
+        </div>
+        <div className="row">
+          <label>take_f</label>
+          <input type="checkbox" checked={hasTake} onChange={e=>setHasTake(e.target.checked)} />
+          {hasTake && <code style={{marginLeft:8}}>GameTakeFunctions.{normalizeOid(oidText)}_take_f</code>}
+        </div>
+        <div className="row">
+          <label>prompt_f</label>
+          <input type="checkbox" checked={hasPrompt} onChange={e=>setHasPrompt(e.target.checked)} />
+          {hasPrompt && <code style={{marginLeft:8}}>ObjectPrompts.{normalizeOid(oidText)}_prompt_f</code>}
+        </div>
+
+        <div className="row" style={{justifyContent:'space-between', alignItems:'center'}}>
+          {editing ? <button className="danger" onClick={handleDelete} title="Objekt löschen">Delete</button> : <span />}
           <div>
             <button onClick={onClose}>Cancel</button>
             <button className="primary" onClick={handleSave}>Save</button>

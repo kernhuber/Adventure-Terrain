@@ -1,0 +1,30 @@
+.place-objects-dropzone {
+  border: 2px dashed rgba(255,255,255,0.25);
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+}
+.place-objects-dropzone.dragover {
+  border-color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.05);
+}
+.drop-hint {
+  font-size: 0.85em;
+}
+.object-list-item {
+  cursor: grab;
+  user-select: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.object-list-item:active {
+  cursor: grabbing;
+}
+
+/* Modal backdrop should not block interactions outside the modal (e.g., dragging from right panel) */
+.modal-backdrop { pointer-events: none; }
+.modal-backdrop .modal { pointer-events: auto; }
+
+/* Scrollable right panel layout (classes applied in ObjectPanel) */
+.objects-panel { display: flex; flex-direction: column; max-height: 100vh; overflow: hidden; }
+.objects-panel__list { overflow-y: auto; min-height: 0; max-height: 100%; padding-right: 8px; margin: 0; }
