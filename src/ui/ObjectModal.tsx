@@ -93,10 +93,10 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
       ownedby,
       fixed,
       hidden,
-      apply_f: hasApply ? `GameApplyFunctions.${newOid}_apply_f` : null,
-      reveal_f: hasReveal ? `GameRevealFunctions.${newOid}_reveal_f` : null,
-      take_f: hasTake ? `GameTakeFunctions.${newOid}_take_f` : null,
-      prompt_f: hasPrompt ? `ObjectPrompts.${newOid}_prompt_f` : null
+      apply_f: hasApply ? `game_apply_functions.${newOid}_apply_f` : null,
+      reveal_f: hasReveal ? `game_reveal_functions.${newOid}_reveal_f` : null,
+      take_f: hasTake ? `game_take_functions.${newOid}_take_f` : null,
+      prompt_f: hasPrompt ? `object_prompts.${newOid}_prompt_f` : null
     }
 
     if (editing) {
@@ -184,22 +184,22 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
         <div className="row">
           <label>apply_f</label>
           <input type="checkbox" checked={hasApply} onChange={e=>setHasApply(e.target.checked)} />
-          {hasApply && <code style={{marginLeft:8}}>GameApplyFunctions.{normalizeOid(oidText)}_apply_f</code>}
+          {hasApply && <code style={{marginLeft:8}}>game_apply_functions.{normalizeOid(oidText)}_apply_f</code>}
         </div>
         <div className="row">
           <label>reveal_f</label>
           <input type="checkbox" checked={hasReveal} onChange={e=>setHasReveal(e.target.checked)} />
-          {hasReveal && <code style={{marginLeft:8}}>GameRevealFunctions.{normalizeOid(oidText)}_reveal_f</code>}
+          {hasReveal && <code style={{marginLeft:8}}>game_reveal_functions.{normalizeOid(oidText)}_reveal_f</code>}
         </div>
         <div className="row">
           <label>take_f</label>
           <input type="checkbox" checked={hasTake} onChange={e=>setHasTake(e.target.checked)} />
-          {hasTake && <code style={{marginLeft:8}}>GameTakeFunctions.{normalizeOid(oidText)}_take_f</code>}
+          {hasTake && <code style={{marginLeft:8}}>game_take_functions.{normalizeOid(oidText)}_take_f</code>}
         </div>
         <div className="row">
           <label>prompt_f</label>
           <input type="checkbox" checked={hasPrompt} onChange={e=>setHasPrompt(e.target.checked)} />
-          {hasPrompt && <code style={{marginLeft:8}}>ObjectPrompts.{normalizeOid(oidText)}_prompt_f</code>}
+          {hasPrompt && <code style={{marginLeft:8}}>object_prompts.{normalizeOid(oidText)}_prompt_f</code>}
         </div>
 
         <div className="row" style={{justifyContent:'space-between', alignItems:'center'}}>

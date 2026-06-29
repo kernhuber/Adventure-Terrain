@@ -34,8 +34,8 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
   // interner Name editierbar (Rename erfolgt beim Save)
   const [widText, setWidText] = useState<string>(wid)
 
-  const promptOptions = useMemo(() => callbackRegistry.WayPrompts, [])
-  const obsOptions = useMemo(() => callbackRegistry.GameObstructionCheckFunctions, [])
+  const promptOptions = useMemo(() => callbackRegistry.way_prompts, [])
+  const obsOptions = useMemo(() => callbackRegistry.game_obstruction_check_functions, [])
 
   function handleDelete() {
     if (!confirm(`Way ${wid} wirklich löschen?`)) return
@@ -59,8 +59,8 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
     // Feldwerte übernehmen
     next.way_defs[wid].text_direction = textDir
     next.way_defs[wid].description = description
-    next.way_defs[wid].way_prompt_f = hasPromptF ? `WayPrompts.${wid}_prompt_f` : null
-    next.way_defs[wid].obstruction_check = hasObstruction ? `GameObstructionCheckFunctions.${wid}_obstruction_check` : null
+    next.way_defs[wid].way_prompt_f = hasPromptF ? `way_prompts.${wid}_prompt_f` : null
+    next.way_defs[wid].obstruction_check = hasObstruction ? `game_obstruction_check_functions.${wid}_obstruction_check` : null
 
     // Rename, falls internal id geändert wurde
     const desired = normalizeWid(widText)
@@ -77,10 +77,10 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
 
       // Callback-Refs anpassen
       if (next.way_defs[newWid].way_prompt_f) {
-        next.way_defs[newWid].way_prompt_f = `WayPrompts.${newWid}_prompt_f`
+        next.way_defs[newWid].way_prompt_f = `way_prompts.${newWid}_prompt_f`
       }
       if (next.way_defs[newWid].obstruction_check) {
-        next.way_defs[newWid].obstruction_check = `GameObstructionCheckFunctions.${newWid}_obstruction_check`
+        next.way_defs[newWid].obstruction_check = `game_obstruction_check_functions.${newWid}_obstruction_check`
       }
 
       // place_defs[*].ways remappen
@@ -125,7 +125,7 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
             checked={hasPromptF}
             onChange={e=>setHasPromptF(e.target.checked)}
           />
-          {hasPromptF && <code style={{ marginLeft: 8 }}>WayPrompts.{normalizeWid(widText)}_prompt_f</code>}
+          {hasPromptF && <code style={{ marginLeft: 8 }}>way_prompts.{normalizeWid(widText)}_prompt_f</code>}
         </div>
 
         <div className="row">
@@ -135,11 +135,11 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
             checked={hasObstruction}
             onChange={e=>setHasObstruction(e.target.checked)}
           />
-          {hasObstruction && <code style={{ marginLeft: 8 }}>GameObstructionCheckFunctions.{normalizeWid(widText)}_obstruction_check</code>}
+          {hasObstruction && <code style={{ marginLeft: 8 }}>game_obstruction_check_functions.{normalizeWid(widText)}_obstruction_check</code>}
         </div>
 
         <div className="muted" style={{ marginTop: 8 }}>
-          Autocomplete Registry — WayPrompts: [{promptOptions.join(', ')}]; Obstruction: [{obsOptions.join(', ')}]
+          Autocomplete Registry — way_prompts: [{promptOptions.join(', ')}]; game_obstruction_check_functions: [{obsOptions.join(', ')}]
         </div>
 
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>

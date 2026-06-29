@@ -32,7 +32,7 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
   function persistCommon(next: World, pid: string) {
     next.place_defs[pid].description = description
     next.place_defs[pid].place_prompt = placePrompt
-    next.place_defs[pid].place_prompt_f = hasPromptF ? `PlacePrompts.${pid}_place_prompt_f` : null
+    next.place_defs[pid].place_prompt_f = hasPromptF ? `place_prompts.${pid}_place_prompt_f` : null
   }
 
   /** Auto-Rename aus dem 1. Callname */
@@ -120,10 +120,10 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
 
             // Callback-Refs an neue ID koppeln
             if (next.way_defs[newWid].way_prompt_f) {
-              next.way_defs[newWid].way_prompt_f = `WayPrompts.${newWid}_prompt_f`
+              next.way_defs[newWid].way_prompt_f = `way_prompts.${newWid}_prompt_f`
             }
             if (next.way_defs[newWid].obstruction_check) {
-              next.way_defs[newWid].obstruction_check = `GameObstructionCheckFunctions.${newWid}_obstruction_check`
+              next.way_defs[newWid].obstruction_check = `game_obstruction_check_functions.${newWid}_obstruction_check`
             }
           }
         }
@@ -247,7 +247,7 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
         <div className="row">
           <label>place_prompt_f</label>
           <input type="checkbox" checked={hasPromptF} onChange={e=>setHasPromptF(e.target.checked)} />
-          {hasPromptF && <code style={{marginLeft:8}}>PlacePrompts.{placeId}_place_prompt_f</code>}
+          {hasPromptF && <code style={{marginLeft:8}}>place_prompts.{placeId}_place_prompt_f</code>}
         </div>
 
         <div

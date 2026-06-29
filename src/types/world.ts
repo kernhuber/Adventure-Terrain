@@ -1,13 +1,14 @@
 import { z } from 'zod'
 
+// Must match the snake_case keys of `module_map` in ../Adventure/game_state.py.
 export const CallbackModuleEnum = z.enum([
-  "GameApplyFunctions",
-  "GameTakeFunctions",
-  "GameRevealFunctions",
-  "GameObstructionCheckFunctions",
-  "PlacePrompts",
-  "ObjectPrompts",
-  "WayPrompts"
+  "game_apply_functions",
+  "game_take_functions",
+  "game_reveal_functions",
+  "game_obstruction_check_functions",
+  "place_prompts",
+  "object_prompts",
+  "way_prompts"
 ])
 
 export const CallbackRefSchema = z.string().nullable()
