@@ -22,7 +22,7 @@ function findWay(world: World, from: string, to: string): [string, WayDef] | nul
   return e ?? null
 }
 
-/** Generate a fresh, unique way id for a new from -> to direction (callname-based, like Add Place). */
+/** A suggested id for a NEW from -> to direction (callname-based, editable afterwards). */
 function genWid(world: World, from: string, to: string): string {
   const fc = world.place_defs[from]?.callnames?.[0] ?? from.replace(/^p_/, '')
   const tc = world.place_defs[to]?.callnames?.[0] ?? to.replace(/^p_/, '')
@@ -34,6 +34,7 @@ function genWid(world: World, from: string, to: string): string {
 
 type DirState = {
   enabled: boolean
+  id: string
   text: string
   desc: string
   hasPrompt: boolean
@@ -42,11 +43,11 @@ type DirState = {
 
 function DirectionEditor(props: {
   title: string
-  wid: string
   state: DirState
   set: (patch: Partial<DirState>) => void
 }) {
-  const { title, wid, state, set } = props
+  const { title, state, set } = props
+  const wid = state.id.trim()
   const promptRef = `way_prompts.${wid}_prompt_f`
   const obsRef = `game_obstruction_check_functions.${wid}_obstruction_check`
   return (
@@ -54,10 +55,13 @@ function DirectionEditor(props: {
       <div className="row" style={{ alignItems: 'center' }}>
         <input type="checkbox" checked={state.enabled} onChange={e => set({ enabled: e.target.checked })} />
         <strong style={{ marginLeft: 8 }}>{title}</strong>
-        <code style={{ marginLeft: 8 }}>{wid}</code>
       </div>
       {state.enabled && (
         <>
+          <div className="row">
+            <label>internal id</label>
+            <input type="text" value={state.id} onChange={e => set({ id: e.target.value })} placeholder="z.B. w_korridor_hoehle" />
+          </div>
           <div className="row">
             <label>text_direction</label>
             <input type="text" value={state.text} onChange={e => set({ text: e.target.value })} />
@@ -88,43 +92,54 @@ export default function WayModal({ world, placeA, placeB, open, onClose, onApply
   const dirAB = findWay(world, placeA, placeB)
   const dirBA = findWay(world, placeB, placeA)
 
-  // Stable ids for display/callback names: existing id if present, else the id a new way would get.
-  const abWid = dirAB?.[0] ?? genWid(world, placeA, placeB)
-  const baWid = dirBA?.[0] ?? genWid(world, placeB, placeA)
-
-  const initDir = (d: [string, WayDef] | null, defaultTo: string): DirState => ({
+  const initDir = (d: [string, WayDef] | null, from: string, to: string): DirState => ({
     enabled: !!d,
-    text: d?.[1].text_direction ?? `zu ${nameOf(world, defaultTo)}`,
+    id: d?.[0] ?? genWid(world, from, to),
+    text: d?.[1].text_direction ?? `zu ${nameOf(world, to)}`,
     desc: d?.[1].description ?? '',
     hasPrompt: !!d?.[1].way_prompt_f,
     hasObs: !!d?.[1].obstruction_check
   })
 
-  const [ab, setAb] = useState<DirState>(() => initDir(dirAB, placeB))
-  const [ba, setBa] = useState<DirState>(() => initDir(dirBA, placeA))
+  const [ab, setAb] = useState<DirState>(() => initDir(dirAB, placeA, placeB))
+  const [ba, setBa] = useState<DirState>(() => initDir(dirBA, placeB, placeA))
 
-  function applyDir(next: World, enabled: boolean, existingWid: string | null, from: string, to: string, s: DirState) {
-    if (enabled) {
-      const wid = existingWid ?? genWid(next, from, to)
-      next.way_defs[wid] = {
-        source: from,
-        destination: to,
-        text_direction: s.text,
-        description: s.desc,
-        obstruction_check: s.hasObs ? `game_obstruction_check_functions.${wid}_obstruction_check` : null,
-        way_prompt_f: s.hasPrompt ? `way_prompts.${wid}_prompt_f` : null
+  // Apply one direction's state to `next`. Handles create, update, rename (id edited)
+  // and delete (unchecked). The id is taken as typed (internal tool — ids are kept
+  // stable in the Adventure even when places are renamed), only trimmed and de-duped.
+  function applyDir(next: World, s: DirState, existingWid: string | null, from: string, to: string) {
+    if (!s.enabled) {
+      if (existingWid) {
+        delete next.way_defs[existingWid]
+        for (const p of Object.values(next.place_defs)) p.ways = p.ways.filter(x => x !== existingWid)
       }
-      if (!next.place_defs[from].ways.includes(wid)) next.place_defs[from].ways.push(wid)
-    } else if (existingWid) {
-      delete next.way_defs[existingWid]
-      for (const p of Object.values(next.place_defs)) p.ways = p.ways.filter(x => x !== existingWid)
+      return
     }
+    let wid = s.id.trim() || genWid(next, from, to)
+    // Don't clobber a different existing way that happens to share the id.
+    if (wid !== existingWid) {
+      const base = wid; let i = 2
+      while (next.way_defs[wid]) { wid = `${base}_${i}`; i++ }
+    }
+    if (existingWid && existingWid !== wid) {
+      delete next.way_defs[existingWid]
+      for (const p of Object.values(next.place_defs)) p.ways = p.ways.map(x => x === existingWid ? wid : x)
+    }
+    next.way_defs[wid] = {
+      source: from,
+      destination: to,
+      text_direction: s.text,
+      description: s.desc,
+      obstruction_check: s.hasObs ? `game_obstruction_check_functions.${wid}_obstruction_check` : null,
+      way_prompt_f: s.hasPrompt ? `way_prompts.${wid}_prompt_f` : null
+    }
+    if (!next.place_defs[from].ways.includes(wid)) next.place_defs[from].ways.push(wid)
   }
 
   function save() {
     const next: World = JSON.parse(JSON.stringify(world))
-    applyDir(next, ab.enabled, dirAB?.[0] ?? null, placeA, placeB, ab)
-    applyDir(next, ba.enabled, dirBA?.[0] ?? null, placeB, placeA, ba)
+    applyDir(next, ab, dirAB?.[0] ?? null, placeA, placeB)
+    applyDir(next, ba, dirBA?.[0] ?? null, placeB, placeA)
     onApply(next)
     onClose()
   }
@@ -133,17 +148,15 @@ export default function WayModal({ world, placeA, placeB, open, onClose, onApply
     <div className="modal-backdrop">
       <div className="modal" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
         <h2>Verbindung: <code>{nameOf(world, placeA)}</code> ↔ <code>{nameOf(world, placeB)}</code></h2>
-        <p className="muted">Jede Richtung lässt sich per Checkbox an-/abschalten und einzeln bearbeiten.</p>
+        <p className="muted">Jede Richtung lässt sich per Checkbox an-/abschalten und einzeln bearbeiten. Die interne id kann frei vergeben werden (Umbenennen passt way_defs, place.ways und die Callback-Namen an).</p>
 
         <DirectionEditor
           title={`${nameOf(world, placeA)} → ${nameOf(world, placeB)}`}
-          wid={abWid}
           state={ab}
           set={patch => setAb(s => ({ ...s, ...patch }))}
         />
         <DirectionEditor
           title={`${nameOf(world, placeB)} → ${nameOf(world, placeA)}`}
-          wid={baWid}
           state={ba}
           set={patch => setBa(s => ({ ...s, ...patch }))}
         />
