@@ -9,7 +9,7 @@ type Props = {
   onPositionsChange: (pos: Record<string, { x: number, y: number }>) => void
   onConnectPlaces: (sourceId: string, targetId: string) => void
   onNodeDoubleClick: (placeId: string) => void
-  onEdgeDoubleClick: (wayId: string) => void
+  onEdgeDoubleClick: (placeA: string, placeB: string) => void
 }
 
 export default function GraphView({ world, positions, onPositionsChange, onConnectPlaces, onNodeDoubleClick, onEdgeDoubleClick }: Props) {
@@ -27,23 +27,30 @@ export default function GraphView({ world, positions, onPositionsChange, onConne
   }, [world, positions, setNodes])
 
   useEffect(() => {
-    // A way (source -> destination) is bidirectional iff another way goes
-    // destination -> source. Compare by endpoints, not by guessing an id string.
-    const pairs = new Set(Object.values(world.way_defs).map(w => `${w.source} ${w.destination}`))
-    const nextEdges: Edge[] = Object.entries(world.way_defs).map(([wid, w]) => {
-      const miss = !pairs.has(`${w.destination} ${w.source}`)
-      return {
-        id: wid,
-        source: w.source,
-        target: w.destination,
-        markerEnd: { type: 'arrowclosed' },
+    // Draw ONE line per pair of places. A connection is bidirectional iff ways exist
+    // for both directions; then it's white. A one-way connection is orange (arrow shows
+    // the direction). Labels are omitted to keep the graph readable — double-click an
+    // edge to edit both directions.
+    const has = new Set(Object.values(world.way_defs).map(w => `${w.source} ${w.destination}`))
+    const seen = new Set<string>()
+    const nextEdges: Edge[] = []
+    for (const w of Object.values(world.way_defs)) {
+      const [lo, hi] = w.source < w.destination ? [w.source, w.destination] : [w.destination, w.source]
+      const key = `${lo} ${hi}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      const bidi = has.has(`${lo} ${hi}`) && has.has(`${hi} ${lo}`)
+      nextEdges.push({
+        id: `pair:${key}`,
+        // For one-way, orient the arrow along the existing direction (w.source -> w.destination).
+        source: bidi ? lo : w.source,
+        target: bidi ? hi : w.destination,
         type: 'default',
-        // Labels are intentionally omitted (cluttered the graph); edit details by
-        // double-clicking a way. One-way ways (no destination -> source partner)
-        // are shown with an orange line.
-        style: miss ? { stroke: '#f59e0b', strokeWidth: 2 } : undefined
-      } as Edge
-    })
+        data: { placeA: lo, placeB: hi },
+        markerEnd: bidi ? undefined : { type: 'arrowclosed' },
+        style: bidi ? undefined : { stroke: '#f59e0b', strokeWidth: 2 }
+      } as Edge)
+    }
     setEdges(nextEdges)
   }, [world, setEdges])
 
@@ -65,7 +72,7 @@ export default function GraphView({ world, positions, onPositionsChange, onConne
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeDoubleClick={(_, n) => onNodeDoubleClick(n.id)}
-        onEdgeDoubleClick={(_, e) => onEdgeDoubleClick(String(e.id))}
+        onEdgeDoubleClick={(_, e) => onEdgeDoubleClick(String(e.data?.placeA ?? e.source), String(e.data?.placeB ?? e.target))}
         onNodeDragStop={handleNodeDragStop}
         fitView
       >

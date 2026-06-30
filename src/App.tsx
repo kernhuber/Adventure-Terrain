@@ -29,7 +29,7 @@ export default function App() {
   const [positions, setPositions] = useState<Record<string, {x:number,y:number}>>({})
   const [placeModal, setPlaceModal] = useState<string | null>(null)
   const [objectModal, setObjectModal] = useState<{oid:string|null} | null>(null)
-  const [wayModal, setWayModal] = useState<string | null>(null)
+  const [wayModal, setWayModal] = useState<{a:string,b:string} | null>(null)
 
   const counts = useMemo(() => {
     if (!world) return null
@@ -233,7 +233,7 @@ export default function App() {
               onPositionsChange={setPositions}
               onConnectPlaces={onConnectPlaces}
               onNodeDoubleClick={openPlace}
-              onEdgeDoubleClick={setWayModal}
+              onEdgeDoubleClick={(a,b)=>setWayModal({a,b})}
             />
           ) : (
             <div style={{padding:'24px'}}><p>Starte mit <b>Load</b> oder <b>Load Sample</b>.</p></div>
@@ -279,7 +279,7 @@ export default function App() {
         )}
 
       {wayModal && world && (
-        <WayModal world={world} wid={wayModal} open={true} onClose={()=>setWayModal(null)} onApply={applyWorld} />
+        <WayModal world={world} placeA={wayModal.a} placeB={wayModal.b} open={true} onClose={()=>setWayModal(null)} onApply={applyWorld} />
       )}
       {objectModal && world && (
         <ObjectModal world={world} open={true} oid={objectModal.oid} onClose={()=>setObjectModal(null)} onApply={applyWorld} />
