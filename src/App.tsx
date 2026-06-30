@@ -30,7 +30,6 @@ export default function App() {
   const [placeModal, setPlaceModal] = useState<string | null>(null)
   const [objectModal, setObjectModal] = useState<{oid:string|null} | null>(null)
   const [wayModal, setWayModal] = useState<string | null>(null)
-  const [showWayLabels, setShowWayLabels] = useState(true)
 
   const counts = useMemo(() => {
     if (!world) return null
@@ -219,7 +218,6 @@ export default function App() {
           <button onClick={handleDownload} disabled={!world}>Save</button>
           <button onClick={addPlace} disabled={!world}>Add Place</button>
           <button onClick={exportRuntime} disabled={!world}>Export Runtime</button>
-          <button onClick={()=>setShowWayLabels(v=>!v)} disabled={!world}>{showWayLabels ? 'Hide Way Labels' : 'Show Way Labels'}</button>
           <div className="right">
             {world && <span className="pill">{Object.keys(world.place_defs).length} places • {Object.keys(world.way_defs).length} ways • {Object.keys(world.object_defs).length} objects</span>}
           </div>
@@ -236,7 +234,6 @@ export default function App() {
               onConnectPlaces={onConnectPlaces}
               onNodeDoubleClick={openPlace}
               onEdgeDoubleClick={setWayModal}
-              showWayLabels={showWayLabels}
             />
           ) : (
             <div style={{padding:'24px'}}><p>Starte mit <b>Load</b> oder <b>Load Sample</b>.</p></div>
