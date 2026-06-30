@@ -22,11 +22,16 @@ function findWay(world: World, from: string, to: string): [string, WayDef] | nul
   return e ?? null
 }
 
-/** A suggested id for a NEW from -> to direction (callname-based, editable afterwards). */
-function genWid(world: World, from: string, to: string): string {
+/** Callname-based name a from -> to way "should" have, e.g. w_korridor_hoehle. */
+function suggestWid(world: World, from: string, to: string): string {
   const fc = world.place_defs[from]?.callnames?.[0] ?? from.replace(/^p_/, '')
   const tc = world.place_defs[to]?.callnames?.[0] ?? to.replace(/^p_/, '')
-  const base = `w_${slugify(fc)}_${slugify(tc)}`
+  return `w_${slugify(fc)}_${slugify(tc)}`
+}
+
+/** Suggested id for a NEW from -> to direction: the callname-based name, made unique. */
+function genWid(world: World, from: string, to: string): string {
+  const base = suggestWid(world, from, to)
   let id = base, i = 2
   while (world.way_defs[id]) { id = `${base}_${i}`; i++ }
   return id
@@ -43,10 +48,11 @@ type DirState = {
 
 function DirectionEditor(props: {
   title: string
+  suggestion: string
   state: DirState
   set: (patch: Partial<DirState>) => void
 }) {
-  const { title, state, set } = props
+  const { title, suggestion, state, set } = props
   const wid = state.id.trim()
   const promptRef = `way_prompts.${wid}_prompt_f`
   const obsRef = `game_obstruction_check_functions.${wid}_obstruction_check`
@@ -61,6 +67,11 @@ function DirectionEditor(props: {
           <div className="row">
             <label>internal id</label>
             <input type="text" value={state.id} onChange={e => set({ id: e.target.value })} placeholder="z.B. w_korridor_hoehle" />
+          </div>
+          <div className="row">
+            <label>Suggested Way Name</label>
+            <input type="text" value={suggestion} readOnly style={{ opacity: 0.7 }} />
+            <button type="button" onClick={() => set({ id: suggestion })} disabled={state.id.trim() === suggestion} title="Vorschlag als interne id übernehmen">Übernehmen</button>
           </div>
           <div className="row">
             <label>text_direction</label>
@@ -152,11 +163,13 @@ export default function WayModal({ world, placeA, placeB, open, onClose, onApply
 
         <DirectionEditor
           title={`${nameOf(world, placeA)} → ${nameOf(world, placeB)}`}
+          suggestion={suggestWid(world, placeA, placeB)}
           state={ab}
           set={patch => setAb(s => ({ ...s, ...patch }))}
         />
         <DirectionEditor
           title={`${nameOf(world, placeB)} → ${nameOf(world, placeA)}`}
+          suggestion={suggestWid(world, placeB, placeA)}
           state={ba}
           set={patch => setBa(s => ({ ...s, ...patch }))}
         />
