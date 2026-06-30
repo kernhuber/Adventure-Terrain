@@ -55,7 +55,7 @@ Runtime function-name conventions (suffix per field):
 - object `prompt_f`       → `o_<x>_prompt_f`
 - object `apply_f`        → `o_<x>_apply_f`  (also `_reveal_f`, `_take_f`)
 - way `way_prompt_f`      → `w_<x>_prompt_f`
-- way `obstruction_check` → `w_<x>_f`  (note: just `_f`, not `_obstruction_check`)
+- way `obstruction_check` → `w_<x>_obstruction_check`
 
 ## Callback validation
 
@@ -71,6 +71,26 @@ note `editor-callback-naming-mismatch`). Callback function names follow `<id>_<f
 place `p_x_place_prompt_f`, object `o_x_apply_f` / `_reveal_f` / `_take_f` / `_prompt_f`,
 way `w_x_prompt_f`, and obstruction `w_x_obstruction_check` (the game's legacy `_f`
 obstruction names were renamed to this so the editor's generated suffix always matches).
+
+## Export Runtime → Adventure stubs
+
+"Export Runtime" downloads `world.json` plus `python_stubs.zip` (one stub file per
+referenced callback module, with correct per-module signatures). The full round-trip —
+unzip, run `../Adventure/apply_editor_stubs.py` (a wrapper around `missing_functions.py`)
+to extract only the not-yet-implemented functions, then paste them into the real
+modules — is documented in **`../Adventure/docs/EDITOR-RUNTIME-STUBS.md`**.
+
+## Graph & WayModal (current behavior)
+
+- `GraphView` draws **one line per pair of places**: white if bidirectional (ways exist
+  both ways), orange with an arrow if one-way. Bidirectionality is decided by endpoints
+  (a `D→S` way exists for an `S→D` way), not by guessing ids. Way labels were removed
+  (cluttered); double-click an edge to edit.
+- `WayModal` edits the **place-pair**: both directions, each with an enable checkbox
+  (tick = create the way, untick = delete it) and an editable internal id plus a
+  read-only "Suggested Way Name" + apply button. Each enabled callback shows a
+  `CallbackStatus` badge (✓ exists in game / ⚠ not implemented), driven by
+  `isKnownCallback` against `callbackRegistry`.
 
 ## Conventions
 
