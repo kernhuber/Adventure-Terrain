@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { World } from '../types/world'
 import { callbackRegistry } from '../lib/callbacks'
 import { slugify } from '../utils/slugify'
+import CallbackStatus from './CallbackStatus'
 
 type Props = {
   world: World
@@ -36,6 +37,11 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
 
   const promptOptions = useMemo(() => callbackRegistry.way_prompts, [])
   const obsOptions = useMemo(() => callbackRegistry.game_obstruction_check_functions, [])
+
+  // Callback refs this way would resolve to (recomputed live as the id is edited).
+  const normWid = normalizeWid(widText)
+  const promptRef = `way_prompts.${normWid}_prompt_f`
+  const obsRef = `game_obstruction_check_functions.${normWid}_obstruction_check`
 
   function handleDelete() {
     if (!confirm(`Way ${wid} wirklich löschen?`)) return
@@ -125,7 +131,7 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
             checked={hasPromptF}
             onChange={e=>setHasPromptF(e.target.checked)}
           />
-          {hasPromptF && <code style={{ marginLeft: 8 }}>way_prompts.{normalizeWid(widText)}_prompt_f</code>}
+          {hasPromptF && <CallbackStatus refName={promptRef} />}
         </div>
 
         <div className="row">
@@ -135,12 +141,18 @@ export default function WayModal({ world, wid, open, onClose, onApply }: Props) 
             checked={hasObstruction}
             onChange={e=>setHasObstruction(e.target.checked)}
           />
-          {hasObstruction && <code style={{ marginLeft: 8 }}>game_obstruction_check_functions.{normalizeWid(widText)}_obstruction_check</code>}
+          {hasObstruction && <CallbackStatus refName={obsRef} />}
         </div>
 
-        <div className="muted" style={{ marginTop: 8 }}>
-          Autocomplete Registry — way_prompts: [{promptOptions.join(', ')}]; game_obstruction_check_functions: [{obsOptions.join(', ')}]
-        </div>
+        <details className="muted" style={{ marginTop: 8 }}>
+          <summary style={{ cursor: 'pointer' }}>
+            Bekannte Callbacks im Spiel ({promptOptions.length} way_prompts, {obsOptions.length} obstruction_checks)
+          </summary>
+          <div style={{ marginTop: 6 }}>
+            <div><strong>way_prompts:</strong> {promptOptions.join(', ')}</div>
+            <div style={{ marginTop: 4 }}><strong>game_obstruction_check_functions:</strong> {obsOptions.join(', ')}</div>
+          </div>
+        </details>
 
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <button className="danger" onClick={handleDelete} title="Way löschen">Delete</button>

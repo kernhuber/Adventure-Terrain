@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { World } from '../types/world'
 import { slugify } from '../utils/slugify'
+import CallbackStatus from './CallbackStatus'
 
 type Props = {
   world: World
@@ -184,22 +185,22 @@ export default function ObjectModal({ world, open, oid, onClose, onApply }: Prop
         <div className="row">
           <label>apply_f</label>
           <input type="checkbox" checked={hasApply} onChange={e=>setHasApply(e.target.checked)} />
-          {hasApply && <code style={{marginLeft:8}}>game_apply_functions.{normalizeOid(oidText)}_apply_f</code>}
+          {hasApply && <CallbackStatus refName={`game_apply_functions.${normalizeOid(oidText)}_apply_f`} />}
         </div>
         <div className="row">
           <label>reveal_f</label>
           <input type="checkbox" checked={hasReveal} onChange={e=>setHasReveal(e.target.checked)} />
-          {hasReveal && <code style={{marginLeft:8}}>game_reveal_functions.{normalizeOid(oidText)}_reveal_f</code>}
+          {hasReveal && <CallbackStatus refName={`game_reveal_functions.${normalizeOid(oidText)}_reveal_f`} />}
         </div>
         <div className="row">
           <label>take_f</label>
           <input type="checkbox" checked={hasTake} onChange={e=>setHasTake(e.target.checked)} />
-          {hasTake && <code style={{marginLeft:8}}>game_take_functions.{normalizeOid(oidText)}_take_f</code>}
+          {hasTake && <CallbackStatus refName={`game_take_functions.${normalizeOid(oidText)}_take_f`} />}
         </div>
         <div className="row">
           <label>prompt_f</label>
           <input type="checkbox" checked={hasPrompt} onChange={e=>setHasPrompt(e.target.checked)} />
-          {hasPrompt && <code style={{marginLeft:8}}>object_prompts.{normalizeOid(oidText)}_prompt_f</code>}
+          {hasPrompt && <CallbackStatus refName={`object_prompts.${normalizeOid(oidText)}_prompt_f`} />}
         </div>
 
         <div className="row" style={{justifyContent:'space-between', alignItems:'center'}}>

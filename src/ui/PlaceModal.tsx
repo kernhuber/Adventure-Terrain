@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { World } from '../types/world'
 import { slugify } from '../utils/slugify'
+import CallbackStatus from './CallbackStatus'
 
 type Props = {
   placeId: string
@@ -247,7 +248,7 @@ export default function PlaceModal({ placeId, world, open, onClose, onApply, onR
         <div className="row">
           <label>place_prompt_f</label>
           <input type="checkbox" checked={hasPromptF} onChange={e=>setHasPromptF(e.target.checked)} />
-          {hasPromptF && <code style={{marginLeft:8}}>place_prompts.{placeId}_place_prompt_f</code>}
+          {hasPromptF && <CallbackStatus refName={`place_prompts.${placeId}_place_prompt_f`} />}
         </div>
 
         <div
