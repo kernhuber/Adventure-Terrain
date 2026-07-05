@@ -1210,3 +1210,9 @@
 /.idea/modules.xml
 /.idea/vcs.xml
 /node_modules/
+
+# Build / editor artifacts (added 2026-07-05)
+/dist/
+*.tsbuildinfo
+/world.json
+/_local-artifacts/
